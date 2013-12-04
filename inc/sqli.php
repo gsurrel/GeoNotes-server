@@ -12,34 +12,37 @@
 # *** LICENSE ***
 
 
-/*  Creates a new GeoNotes-server base.
-    if file does not exists, it is created, as well as the tables.
-    if file does exists, tables are checked and created if not exists
+/*
+ * Creates a new GeoNotes-server base.
+ * if file does not exists, it is created, as well as the tables.
+ * if file does exists, tables are checked and created if not exists
 */
 function create_tables() {
-	$requests['notes'] = "CREATE TABLE notes
+	$requests['gn_notes'] = "CREATE TABLE gn_notes
 		(
 			ID INTEGER PRIMARY KEY,
-			gn_lat REAL,
-			gn_lon REAL,
-			gn_title TEXT,
-			gn_text TEXT,
-			gn_user INTEGER,
-			gn_karma INTEGER,
-			gn_creation NUMERIC,
-			gn_lifetime INTEGER,
-			gn_lang TEXT,
-			gn_cat TEXT
-		); CREATE INDEX toUser ON notes ( gn_usr );";
+			lat REAL,
+			lon REAL,
+			title TEXT,
+			text TEXT,
+			user INTEGER,
+			karma INTEGER,
+			creation NUMERIC,
+			lifetime INTEGER,
+			lang TEXT,
+			cat TEXT
+		); CREATE INDEX toUser ON gn_notes ( user );";
 
-	$requests['users'] = "CREATE TABLE users
+	$requests['gn_users'] = "CREATE TABLE gn_users
 		(
 			ID INTEGER PRIMARY KEY,
-			gn_email TEXT,
-			gn_username TEXT,
-			gn_password TEXT,
-			gn_settings TEXT
-		);";
+			email TEXT UNIQUE,
+			username TEXT UNIQUE,
+			password TEXT,
+			settings TEXT
+		);
+		CREATE INDEX userEmail ON gn_users ( email );
+		CREATE INDEX userUsername ON gn_users ( username );";
 
 	/*
 	* SQLite : opens file, check tables by listing them, create the one that miss.
@@ -65,10 +68,10 @@ function create_tables() {
 		}
 
 		// check each wanted table (this is because the "IF NOT EXISTS" condition doesn’t exist in lower versions of SQLite.
-		$wanted_tables = array('notes', 'users');
+		$wanted_tables = array('gn_notes', 'gn_users');
 		foreach ($wanted_tables as $i => $name) {
 			if (!in_array($name, $tables)) {
-				$results = $db_handle->exec($requests['dbase_structure'][$name]);
+				$results = $db_handle->exec($requests[$name]);
 			}
 		}
 	} catch (Exception $e) {
@@ -79,27 +82,34 @@ function create_tables() {
 }
 
 
-/* Open a base */
+/*
+ * Open a base
+*/
 function open_base() {
 	$handle = create_tables();
+	$GLOBALS['db_handle'] = $handle;
 	return $handle;
 }
 
-function db_note($note, $what) {
+/*
+ * Handles ADD, EDIT and DELETE actions
+ * on the NOTES table
+*/
+function db_note($what, $note) {
 	if ($what == 'add') {
 		try {
-			$req = $GLOBALS['db_handle']->prepare('INSERT INTO notes
+			$req = $GLOBALS['db_handle']->prepare('INSERT INTO gn_notes
 			(
-				gn_lat,
-				gn_lon,
-				gn_title,
-				gn_text,
-				gn_user,
-				gn_karma,
-				gn_creation,
-				gn_lifetime,
-				gn_lang,
-				gn_cat
+				lat,
+				lon,
+				title,
+				text,
+				user,
+				karma,
+				creation,
+				lifetime,
+				lang,
+				cat
 			)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
 
@@ -113,7 +123,7 @@ function db_note($note, $what) {
 				$note['creation'],
 				$note['lifetime'],
 				$note['lang'],
-				$note['cat']
+				$note['cat'],
 			));
 			return TRUE;
 		} catch (Exception $e) {
@@ -122,12 +132,12 @@ function db_note($note, $what) {
 
 	} elseif ($what == 'edit') {
 		try {
-			$req = $GLOBALS['db_handle']->prepare('UPDATE notes SET
-				gn_title=?,
-				gn_text=?,
-				gn_lifetime=?,
-				gn_lang=?,
-				gn_cat=?
+			$req = $GLOBALS['db_handle']->prepare('UPDATE gn_notes SET
+				title=?,
+				text=?,
+				lifetime=?,
+				lang=?,
+				cat=?
 				WHERE ID=?');
 			$req->execute(array(
 				$note['title'],
@@ -135,7 +145,7 @@ function db_note($note, $what) {
 				$note['lifetime'],
 				$note['lang'],
 				$note['cat'],
-				$note['ID']
+				$note['ID'],
 			));
 			return TRUE;
 		} catch (Exception $e) {
@@ -145,7 +155,7 @@ function db_note($note, $what) {
 
 	elseif ($what == 'delete') {
 		try {
-			$req = $GLOBALS['db_handle']->prepare('DELETE FROM notes WHERE ID=?');
+			$req = $GLOBALS['db_handle']->prepare('DELETE FROM gn_notes WHERE ID=?');
 			$req->execute(array($note['ID']));
 			return TRUE;
 		} catch (Exception $e) {
@@ -154,21 +164,24 @@ function db_note($note, $what) {
 	}
 }
 
-function db_user($user, $what) {
+/*
+ * Handles ADD, EDIT and DELETE actions
+ * on the USERS table
+*/
+function db_user($what, $user) {
 	if ($what == 'add') {
 		try {
-			$req = $GLOBALS['db_handle']->prepare('INSERT INTO users
+			$req = $GLOBALS['db_handle']->prepare('INSERT INTO gn_users
 			(
-				gn_email,
-				gn_username,
-				gn_password,
+				email,
+				username,
+				password
 			)
 			VALUES (?, ?, ?)');
-
 			$req->execute(array(
 				$user['email'],
-				$user['usuername'],
-				$user['password']
+				$user['username'],
+				crypt($user['password'], 'my_geonotes_server_salt'),
 			));
 			return TRUE;
 		} catch (Exception $e) {
@@ -177,16 +190,16 @@ function db_user($user, $what) {
 
 	} elseif ($what == 'edit') {
 		try {
-			$req = $GLOBALS['db_handle']->prepare('UPDATE users SET
-				gn_email=?,
-				gn_username=?,
-				gn_password=?,
+			$req = $GLOBALS['db_handle']->prepare('UPDATE gn_users SET
+				email=?,
+				username=?,
+				password=?
 				WHERE ID=?');
 			$req->execute(array(
 				$user['email'],
 				$user['username'],
-				$user['password']
-				$user['ID']
+				$user['password'],
+				$user['ID'],
 			));
 			return TRUE;
 		} catch (Exception $e) {
@@ -196,7 +209,7 @@ function db_user($user, $what) {
 
 	elseif ($what == 'delete') {
 		try {
-			$req = $GLOBALS['db_handle']->prepare('DELETE FROM users WHERE ID=?');
+			$req = $GLOBALS['db_handle']->prepare('DELETE FROM gn_users WHERE ID=?');
 			$req->execute(array($user['ID']));
 			return TRUE;
 		} catch (Exception $e) {
@@ -204,3 +217,16 @@ function db_user($user, $what) {
 		}
 	}
 }
+
+/*
+ * Lists all users details,
+*/
+function get_users() {
+	try {
+		$req = $GLOBALS['db_handle']->query("SELECT * FROM gn_users");
+		return $req->fetchAll(PDO::FETCH_CLASS);
+	} catch (Exception $e) {
+		return 'Err. get_user : '.$e->getMessage();
+	}
+}
+

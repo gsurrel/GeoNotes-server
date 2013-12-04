@@ -18,19 +18,20 @@
 		$errors[] = '<li><b>pdo_sqlite</b> PHP-modules not loaded. Please enable before retrying setup.</li>'."\n";
 	}
 	// check directory readability
-	if (!is_writable('../') ) {
+	if (!is_writable('.') ) {
 		$errors[] = '<li>Write rights needed. (chmod of home folder must be 644 at least, 777 recommended).</li>'."\n";
 	}
 	// Everything fine?
 	if (!empty($errors)) {
-		echo '<ol>'."\n";
+		echo '<ul>'."\n";
 		echo implode($errors, '');
-		echo '</ol>'."\n";
+		echo '</ul>'."\n";
 		echo '<p>Installation aborded.</p>'."\n";
 		echo '</div>'."\n".'</div>'."\n".'</html>';
 		die;
 	} else {
 		if ($GLOBALS['lang']['id'] === 'default') {
+			// Stage 1 in setup
 			$langs = array(
 			        "fr" => 'Français',
 			        "en" => 'English'
@@ -41,7 +42,8 @@
 				echo "<li><a href='".$_SERVER['PHP_SELF']."?lang=$id'><code>[$id]</code> $lang</a></li>";
 			}
 			echo '</ul>';
-		} else {
+		} else if (!isset($_POST['username']) || !isset($_POST['password']) || !isset($_POST['email'])) {
+			// Stage 2
 			echo '<h1>'.$GLOBALS['lang']['welcome'].'</h1>'."\n";
 			echo '<form method="post" action="'.$_SERVER['PHP_SELF'].'?'.$_SERVER['QUERY_STRING'].'">'."\n";
 			echo '<p>';
@@ -56,6 +58,32 @@
 			echo '<input type="hidden" name="lang" value="'.$GLOBALS['lang']['id'].'" />'."\n";
 			echo '<input type="submit" name="send" value="OK" />'."\n";
 			echo '</form>'."\n";
+		} else {
+			// Stage 3, create initial user
+			require_once 'inc/sqli.php';
+
+			echo '<h1>Opening DB, testing</h1>';
+			open_base();
+
+			echo '<h1>User</h1>';
+			echo '<h2>Add</h2>';
+			d(db_user('add', array('email' => 'test@lol.com', 'username' => 'Test User', 'password' => 'MyPass')));
+			d(db_user('add', array('email' => 'test2@lol.com', 'username' => 'Test2User', 'password' => 'MyPass2')));
+			d(get_users());
+			echo '<h2>Edit</h2>';
+			d(db_user('edit', array('ID' => '1', 'email' => 'edit@lol.com', 'username' => 'EDIT User', 'password' => 'MyPass2')));
+			d(get_users());
+			echo '<h2>Delete</h2>';
+			d(db_user('delete', array('ID' => '1')));
+			d(db_user('delete', array('ID' => '2')));
+			d(get_users());
+
+			echo '<h1>Note</h1>';
+			echo '<h2>Add</h2>';
+			echo '<h2>Edit</h2>';
+			echo '<h2>Delete</h2>';
+
+			echo '<h1>Clean</h1>';
 		}
 	}
 

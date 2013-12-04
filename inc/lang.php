@@ -13,7 +13,7 @@
 
 if (empty($GLOBALS['lang'])) $GLOBALS['lang'] = '';
 
-$GLOBALS['lang'] = substr($_GET['lang'], 0, 2);
+if (isset($_GET['lang'])) $GLOBALS['lang'] = substr($_GET['lang'], 0, 2);
 
 switch ($GLOBALS['lang']) {
 	case 'fr':
