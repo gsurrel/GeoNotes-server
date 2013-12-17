@@ -11,6 +11,20 @@
 #
 # *** LICENSE ***
 
+// TODO:
+//  - MVC arch
+//  - Reformat
+$GLOBALS['salt'] = 'my_geonotes_server_salt';
+
+/*
+ * Open a base
+*/
+function open_base() {
+	$handle = create_tables();
+	$GLOBALS['db_handle'] = $handle;
+	return $handle;
+}
+
 
 /*
  * Creates a new GeoNotes-server base.
@@ -18,7 +32,7 @@
  * if file does exists, tables are checked and created if not exists
 */
 function create_tables() {
-	$requests['gn_notes'] = "CREATE TABLE gn_notes
+	$requests['gn_notes'] = 'CREATE TABLE gn_notes
 		(
 			ID INTEGER PRIMARY KEY,
 			lat REAL,
@@ -31,9 +45,9 @@ function create_tables() {
 			lifetime INTEGER,
 			lang TEXT,
 			cat TEXT
-		); CREATE INDEX toUser ON gn_notes ( user );";
+		); CREATE INDEX toUser ON gn_notes ( user );';
 
-	$requests['gn_users'] = "CREATE TABLE gn_users
+	$requests['gn_users'] = 'CREATE TABLE gn_users
 		(
 			ID INTEGER PRIMARY KEY,
 			email TEXT UNIQUE,
@@ -42,7 +56,7 @@ function create_tables() {
 			settings TEXT
 		);
 		CREATE INDEX userEmail ON gn_users ( email );
-		CREATE INDEX userUsername ON gn_users ( username );";
+		CREATE INDEX userUsername ON gn_users ( username );';
 
 	/*
 	* SQLite : opens file, check tables by listing them, create the one that miss.
@@ -58,9 +72,9 @@ function create_tables() {
 	try {
 		$db_handle = new PDO('sqlite:'.$file);
 		$db_handle->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$db_handle->query("PRAGMA temp_store=MEMORY; PRAGMA synchronous=OFF; PRAGMA journal_mode=WAL;");
+		$db_handle->query('PRAGMA temp_store=MEMORY; PRAGMA synchronous=OFF; PRAGMA journal_mode=WAL;');
 		// list tables
-		$list_tbl = $db_handle->query("SELECT name FROM sqlite_master WHERE type='table'");
+		$list_tbl = $db_handle->query('SELECT name FROM sqlite_master WHERE type=\'table\'');
 		// make an normal array, need for "in_array()"
 		$tables = array();
 		foreach($list_tbl as $j) {
@@ -75,21 +89,12 @@ function create_tables() {
 			}
 		}
 	} catch (Exception $e) {
-		die('Erreur 1: '.$e->getMessage());
+		$GLOBALS['errors'][] = 'CreateDB: '.$e->getMessage();
 	}
 
 	return $db_handle;
 }
 
-
-/*
- * Open a base
-*/
-function open_base() {
-	$handle = create_tables();
-	$GLOBALS['db_handle'] = $handle;
-	return $handle;
-}
 
 /*
  * Handles ADD, EDIT and DELETE actions
@@ -111,7 +116,7 @@ function db_note($what, $note) {
 				lang,
 				cat
 			)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 
 			$req->execute(array(
 				$note['lat'],
@@ -127,7 +132,7 @@ function db_note($what, $note) {
 			));
 			return TRUE;
 		} catch (Exception $e) {
-			return 'Err. note>add : '.$e->getMessage();
+			$GLOBALS['errors'][] = 'Err. note>add : '.$e->getMessage();
 		}
 
 	} elseif ($what == 'edit') {
@@ -149,7 +154,7 @@ function db_note($what, $note) {
 			));
 			return TRUE;
 		} catch (Exception $e) {
-			return 'Err. note>edit : '.$e->getMessage();
+			$GLOBALS['errors'][] = 'Err. note>edit : '.$e->getMessage();
 		}
 	}
 
@@ -159,7 +164,7 @@ function db_note($what, $note) {
 			$req->execute(array($note['ID']));
 			return TRUE;
 		} catch (Exception $e) {
-			return 'Err. note>delete : '.$e->getMessage();
+			$GLOBALS['errors'][] = 'Err. note>delete : '.$e->getMessage();
 		}
 	}
 }
@@ -175,17 +180,19 @@ function db_user($what, $user) {
 			(
 				email,
 				username,
-				password
+				password,
+				settings
 			)
-			VALUES (?, ?, ?)');
+			VALUES (?, ?, ?, ?)');
 			$req->execute(array(
 				$user['email'],
 				$user['username'],
-				crypt($user['password'], 'my_geonotes_server_salt'),
+				crypt($user['password'], $GLOBALS['salt']),
+				json_encode(array('lang' => 'en')), // TODO, Fix that
 			));
 			return TRUE;
 		} catch (Exception $e) {
-			return 'Err. user>add : '.$e->getMessage();
+			$GLOBALS['errors'][] = 'Err. user>add : '.$e->getMessage();
 		}
 
 	} elseif ($what == 'edit') {
@@ -203,7 +210,7 @@ function db_user($what, $user) {
 			));
 			return TRUE;
 		} catch (Exception $e) {
-			return 'Err. user>edit : '.$e->getMessage();
+			$GLOBALS['errors'][] = 'Err. user>edit : '.$e->getMessage();
 		}
 	}
 
@@ -213,20 +220,100 @@ function db_user($what, $user) {
 			$req->execute(array($user['ID']));
 			return TRUE;
 		} catch (Exception $e) {
-			return 'Err. user>delete : '.$e->getMessage();
+			$GLOBALS['errors'][] = 'Err. user>delete : '.$e->getMessage();
 		}
 	}
 }
 
 /*
- * Lists all users details,
+ * Lists all users details
 */
 function get_users() {
 	try {
-		$req = $GLOBALS['db_handle']->query("SELECT * FROM gn_users");
+		$req = $GLOBALS['db_handle']->query('SELECT * FROM gn_users');
 		return $req->fetchAll(PDO::FETCH_CLASS);
 	} catch (Exception $e) {
-		return 'Err. get_user : '.$e->getMessage();
+		$GLOBALS['errors'][] = 'Err. get_user : '.$e->getMessage();
+	}
+}
+
+/*
+ * Lists all notes details
+*/
+function get_notes() {
+	try {
+		$req = $GLOBALS['db_handle']->query('SELECT * FROM gn_notes');
+		return $req->fetchAll(PDO::FETCH_CLASS);
+	} catch (Exception $e) {
+		$GLOBALS['errors'][] = 'Err. get_notes : '.$e->getMessage();
+	}
+}
+
+/*
+ * Lists notes for a specific user
+*/
+function get_user_notes() {
+	try {
+		$req = $GLOBALS['db_handle']->prepare('SELECT * FROM gn_notes WHERE user=?');
+		$req->execute(array(
+		                  $_SESSION['user']->ID,
+		                  ));
+		return $req->fetchAll(PDO::FETCH_CLASS);
+	} catch (Exception $e) {
+		$GLOBALS['errors'][] = 'Err. get_user_notes : '.$e->getMessage();
+	}
+}
+
+/*
+ * Login
+*/
+function login_user($username_email, $password) {
+	try
+	{
+		$req = $GLOBALS['db_handle']->prepare('SELECT * FROM gn_users WHERE username=? and password=? LIMIT 1');
+		$req->execute(array(
+		        $username_email,
+		        crypt($password, $GLOBALS['salt']),
+		    ));
+	}
+	catch (Exception $e)
+	{
+		$GLOBALS['errors'][] = 'Err. login : '.$e->getMessage();
+	}
+
+	// Check if result right, else try with email
+	$user = $req->fetch(PDO::FETCH_OBJ);
+	if($user === false)
+	{
+		// Retry with email this time
+		try
+		{
+			$req = $GLOBALS['db_handle']->prepare('SELECT * FROM gn_users WHERE email=? and password=? LIMIT 1');
+			$req->execute(array(
+					$username_email,
+					crypt($password, $GLOBALS['salt']),
+				));
+		}
+		catch (Exception $e)
+		{
+			$GLOBALS['errors'][] = 'Err. login : '.$e->getMessage();
+		}
+		$user = $req->fetch(PDO::FETCH_OBJ);
+	}
+
+	// If still false, login is wrong
+	if($user === false)
+	{
+		// wait for 0.5 seconds for preventing bruteforcing
+		usleep(500000);
+		$GLOBALS['infos'][] = 'Wrong login';
+	}
+	else
+	{
+		// Fill session with candy
+		session_set_cookie_params(365*24*60*60);
+		$_SESSION['user'] = $user;
+		$GLOBALS['infos'][] = 'Login successful';
 	}
 }
 

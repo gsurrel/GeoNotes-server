@@ -1,7 +1,6 @@
 <?php
 	// Initialisation script
-	require 'kint/Kint.class.php';
-	require_once 'inc/lang.php';
+	require 'inc/inc.php';
 ?>
 <!DOCTYPE html>
 <html>
@@ -62,21 +61,39 @@
 			// Stage 3, create initial user
 			require_once 'inc/sqli.php';
 
-			echo '<h1>Opening DB, testing</h1>';
-			open_base();
+			echo '<h1>'.$GLOBALS['lang']['h1_create_user'].'</h1>'."\n";
 
-			echo '<h1>User</h1>';
-			echo '<h2>Add</h2>';
-			d(db_user('add', array('email' => 'test@lol.com', 'username' => 'Test User', 'password' => 'MyPass')));
-			d(db_user('add', array('email' => 'test2@lol.com', 'username' => 'Test2User', 'password' => 'MyPass2')));
-			d(get_users());
-			echo '<h2>Edit</h2>';
-			d(db_user('edit', array('ID' => '1', 'email' => 'edit@lol.com', 'username' => 'EDIT User', 'password' => 'MyPass2')));
-			d(get_users());
-			echo '<h2>Delete</h2>';
-			d(db_user('delete', array('ID' => '1')));
-			d(db_user('delete', array('ID' => '2')));
-			d(get_users());
+			open_base();
+			$req = db_user('add', array(
+			                        'email' => $_POST['email'],
+			                        'username' => $_POST['username'],
+			                        'password' => $_POST['password']));
+
+			// Login the user right now
+			$user = login_user($_POST['username'], $_POST['password']);
+
+			if($req === true)
+			{
+				echo '<p>'.$GLOBALS['lang']['p_create_user_success'].'</p>';
+			}
+			else if($req === 'Err. user>add : SQLSTATE[23000]: Integrity constraint violation: 19 column username is not unique')
+			{
+				echo '<p>'.$GLOBALS['lang']['p_create_user_error'].' ';
+				echo       $GLOBALS['lang']['p_create_user_error_username'].'</p>';
+			}
+			else if($req === 'Err. user>add : SQLSTATE[23000]: Integrity constraint violation: 19 column email is not unique')
+			{
+				echo '<p>'.$GLOBALS['lang']['p_create_user_error'].' ';
+				echo       $GLOBALS['lang']['p_create_user_error_email'].'</p>';
+			}
+			else
+			{
+				echo '<p>'.$GLOBALS['lang']['p_create_user_error'].'</p>';
+				echo '<p>'.$GLOBALS['lang']['p_create_user_error_unknown'].'</p>';
+				echo '<pre>'.$req.'</pre>';
+			}
+
+
 
 			echo '<h1>Note</h1>';
 			echo '<h2>Add</h2>';
