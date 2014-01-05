@@ -1,4 +1,4 @@
-GeoNotes-server
-===============
+GeoPost-server
+==============
 
-Server part for GeoNotes
+Server part for GeoPost
