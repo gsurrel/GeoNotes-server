@@ -17,12 +17,12 @@ if (isset($_GET['lang'])) $GLOBALS['lang'] = substr($_GET['lang'], 0, 2);
 
 switch ($GLOBALS['lang']) {
 	case 'fr':
-		include_once('lang/fr_FR.php');
+		require_once('lang/fr_FR.php');
 		break;
 	case 'en':
-		include_once('lang/en_EN.php');
+		require_once('lang/en_EN.php');
 		break;
 	default:
-		include_once('lang/fr_FR.php');
+		require_once('lang/fr_FR.php');
 		$GLOBALS['lang']['id'] = 'default';
 }

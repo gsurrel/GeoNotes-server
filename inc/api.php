@@ -9,50 +9,43 @@
 #
 # *** LICENSE ***
 
-// Open DB if session has user, we will probably always use it
-open_base();
+// Get invasive warning reporting to disable this bypass feature in prod
+$debug_token_bypass = true;
+if($debug_token_bypass === true) $GLOBALS['warnings'][] = 'Token bypass enabled';
 
-if((true || !$GLOBALS['token_error']) && isset($_POST['action']))
+if(isset($_POST['action']) && (!$GLOBALS['token_error'] || ($debug_token_bypass && isset($_GET['debug']))))
 {
-d('Bypassed token check');
+	// Get invasive error reporting to disable this bypass feature in prod
+	if(isset($_GET['debug'])) $GLOBALS['errors'][] = 'Token bypassed by DEBUG flag';
 
-if($_POST['action'] === 'login')
+if($_POST['action'] === 'note_add')
 {
-	if(isset($_POST['username_email']) && isset($_POST['password']))
-	{
-		login_user($_POST['username_email'], $_POST['password']);
-	}
-	else
-	{
-		$GLOBALS['warnings'][] = 'Missing login/email and/or password';
-	}
+	$response = db_note('add', array(
+								     'lat' => $_POST['lat'],
+								     'lon' => $_POST['lon'],
+								     'title' => $_POST['title'],
+								     'text' => $_POST['text'],
+								     'user' => $_SESSION['user']->ID,
+								     'karma' => '0',
+								     'creation' => date('U'),
+								     'lifetime' => $_POST['lifetime'],
+								     'lang' => $_POST['lang'],
+								     'cat' => $_POST['cat']));
+	$GLOBALS['infos'][] = 'Note added (probably)';
+	// If HTML view, then forward to my_notes listing
+	//if(!isset($_GET['api'])) $_POST['action'] = 'list_mine';
 }
-else if($_POST['action'] === 'register')
+else if($_POST['action'] === 'list')
 {
-	if(isset($_POST['username']) && isset($_POST['email']) && isset($_POST['password']))
-	{
-		$req = db_user('add', array(
-		                          'email' => $_POST['email'],
-		                          'username' => $_POST['username'],
-		                          'password' => $_POST['password']));
-		login_user($_POST['username'], $_POST['password']);
-		$req = db_note('add', array(
-		                          'lat' => '0.000000',
-		                          'lon' => '0.000000',
-		                          'title' => 'Title of the note',
-		                          'text' => 'Note content is here.',
-		                          'user' => $_SESSION['user']->ID,
-		                          'karma' => '0',
-		                          'creation' => date('U'),
-		                          'lifetime' => '0',
-		                          'lang' => 'en', // TODO: Fix that
-		                          'cat' => '',
-		                          ));
-	}
-	else
-	{
-		$GLOBALS['warnings'][] = 'Missing login, email and/or password';
-	}
+	$response = get_notes();
+}
+else if($_POST['action'] === 'list_mine')
+{
+	$response = get_user_notes();
+}
+else if($_POST['action'] === 'user')
+{
+	$response = $_SESSION['user'];
 }
 else
 {

@@ -9,11 +9,22 @@
 #
 # *** LICENSE ***
 
-require 'inc/inc.php';
+//require_once('inc/helper.php');
 
-?>
+// Placeholder for answer
+$response = NULL;
+// Processing
+require_once 'inc/inc.php';
+// Formatting of answer
+$response = array('infos' => $GLOBALS['infos'],
+                  'warnings' => $GLOBALS['warnings'],
+                  'errors' => $GLOBALS['errors'],
+                  'data' => $response);
 
-<!DOCTYPE html>
+if(isset($_GET['api'])):
+	echo json_encode($response);
+else:
+?><!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8" />
@@ -22,7 +33,30 @@ require 'inc/inc.php';
 </head>
 <body>
 
-<?php if(!isset($_SESSION['user'])): ?>
+<?php echo d(json_encode($response)); ?>
+
+<table style="background: #000;border-radius: 8pt;margin: 0 auto 5mm;padding: 0 4pt;box-shadow: 4px 6px 5px #888;"><tr style='vertical-align: text-top;'>
+<td style='display: inline-block; color: lightgreen;'>
+<h2 style='margin: 0;'>Infos</h2>
+<ul style='margin: 0;'>
+<?php foreach($GLOBALS['infos'] as $msg) echo '<li>'.$msg.'</li>'; ?>
+</ul>
+</td>
+<td style='display: inline-block; color: orange;'>
+<h2 style='margin: 0;'>Warnings</h2>
+<ul style='margin: 0;'>
+<?php foreach($GLOBALS['warnings'] as $msg) echo '<li>'.$msg.'</li>'; ?>
+</ul>
+</td>
+<td style='display: inline-block; color: red;'>
+<h2 style='margin: 0;'>Errors</h2>
+<ul style='margin: 0;'>
+<?php foreach($GLOBALS['errors'] as $msg) echo '<li>'.$msg.'</li>'; ?>
+</ul>
+</div>
+</tr></table>
+
+<?php if(!isset($_SESSION['user'])): // Not logged in ?>
 
 <h1>Login</h1>
 <form method="POST">
@@ -47,17 +81,63 @@ require 'inc/inc.php';
 	<input type="submit" value="Register" />
 </form>
 
-<?php else: ?>
+<?php else: // Logged in ?>
+<style>#forms>form{display: inline-block;} #forms{text-align: center;}</style>
+<div id="forms">
+<form method="POST">
+	<input type="hidden" name="action" value="user"/><input type="submit" value="'user' details"/>
+</form>
+<form method="POST">
+	<input type="hidden" name="action" value="list"/><input type="submit" value="'list' notes around"/>
+</form>
+<form method="POST">
+	<input type="hidden" name="action" value="list_mine"/><input type="submit" value="'list_mine' (notes)"/>
+</form>
+<form method="POST">
+	<?php srand(); ?>
+	<input type="hidden" name="action" value="note_add"/>
+	<input type="hidden" name="lat" value="<?php echo rand(-90, 90).'.'.rand(); ?>"/>
+	<input type="hidden" name="lon" value="<?php echo rand(-180, 180).'.'.rand(); ?>"/>
+	<input type="hidden" name="title" value="<?php echo shell_exec("shuf -n5 /usr/share/dict/words | tr '\n' ' '"); ?>"/>
+	<input type="hidden" name="text" value="<?php echo shell_exec("shuf -n100 /usr/share/dict/words | tr '\n' ' '"); ?>"/>
+	<input type="hidden" name="lifetime" value="0"/>
+	<input type="hidden" name="lang" value=""/>
+	<input type="hidden" name="cat" value=""/>
+	<input type="submit" value="'note_add'"/>
+</form>
+<form method="POST">
+	<input type="hidden" name="action" value="logout"/><input type="submit" value="'logout'"/>
+</form>
+</div>
 
-<h1>Welcome <?php echo $_SESSION['user']->username; ?></h1>
+<?php if($_POST['action'] === 'user'): ?>
 
-<form method="POST"><input type="hidden" name="action" value="logout"/><input type="submit" value="Logout"/></form>
+<h1>Welcome <?php echo $response['data']->username; ?>
+</h1>
 
-<h2>List of notes</h2>
+<table style="display: inline-block" border>
+	<caption>User details</caption>
+	<thead><th>Key</th><th>Value</th></thead>
+	<tbody>
+	<?php	foreach($response['data'] as $key => $value)
+			{
+				echo "<tr><td>$key</td><td>$value</td></tr>\n";
+			} ?>
+	</tbody>
+</table>
+<table style="display: inline-block" border>
+	<caption>Pretty settings</caption>
+	<thead><th>Key</th><th>Value</th></thead>
+	<tbody>
+		<?php foreach(json_decode($response['data']->settings) as $key => $value) echo "<tr><td>$key</td><td>$value</td></tr>" ?>
+	</tbody>
+</table>
+
+<?php elseif($_POST['action'] === 'list' || $_POST['action'] === 'list_mine'): // $_POST['action'] ?>
+
+<h2>List of <?php if($_POST['action'] === 'list_mine') echo 'my '; ?>notes</h2>
 <?php
-	$notes = get_user_notes();
-	d($notes);
-	foreach($notes as $note)
+	foreach($response['data'] as $note)
 	{ ?>
 <table style="display: inline-block" border>
 <thead><th>Key</th><th>Value</th></thead>
@@ -68,30 +148,21 @@ require 'inc/inc.php';
 		} ?>
 </tbody>
 </table>
-<?php }
-?>
+<?php } ?>
 
-<p><i>TODO: add note</i></p>
+<?php else: // $_POST['action']
+	!d($response['data']);
+endif; // $_POST['action'] ?>
 
-<h2>Settings:</h2>
-<?php $settings = json_decode($_SESSION['user']->settings, true); ?>
-<table border>
-	<thead><th>Key</th><th>Value</th></thead>
-	<tbody>
-		<?php foreach($settings as $key => $value) echo "<tr><td>$key</td><td>$value</td></tr>" ?>
-	</tbody>
-</table>
+<?php endif; // (Not) logged in ?>
 
-<p><i>TODO: edit user settings</i></p>
-
-<?php endif; ?>
-
-<h1>Infos, warnings and errors</h1>
-<?php !d($GLOBALS['infos']); ?>
-<?php !d($GLOBALS['warnings']); ?>
-<?php !d($GLOBALS['errors']); ?>
+<?php if(isset($_GET['debug'])): // Debug variables ?>
 
 <h1>Admin</h1>
 <?php d($_SESSION); ?>
 <?php d(get_users()); ?>
 <?php d(get_notes()); ?>
+
+<?php endif; // End of debug variables ?>
+
+<?php endif; // End of API display or HTML ?>

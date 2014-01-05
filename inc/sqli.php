@@ -25,7 +25,6 @@ function open_base() {
 	return $handle;
 }
 
-
 /*
  * Creates a new GeoNotes-server base.
  * if file does not exists, it is created, as well as the tables.
@@ -268,9 +267,10 @@ function get_user_notes() {
  * Login
 */
 function login_user($username_email, $password) {
+	$select_fields = 'ID, email, username, settings';
 	try
 	{
-		$req = $GLOBALS['db_handle']->prepare('SELECT * FROM gn_users WHERE username=? and password=? LIMIT 1');
+		$req = $GLOBALS['db_handle']->prepare('SELECT '.$select_fields.' FROM gn_users WHERE username=? and password=? LIMIT 1');
 		$req->execute(array(
 		        $username_email,
 		        crypt($password, $GLOBALS['salt']),
@@ -288,7 +288,7 @@ function login_user($username_email, $password) {
 		// Retry with email this time
 		try
 		{
-			$req = $GLOBALS['db_handle']->prepare('SELECT * FROM gn_users WHERE email=? and password=? LIMIT 1');
+			$req = $GLOBALS['db_handle']->prepare('SELECT '.$select_fields.' FROM gn_users WHERE email=? and password=? LIMIT 1');
 			$req->execute(array(
 					$username_email,
 					crypt($password, $GLOBALS['salt']),
@@ -310,10 +310,15 @@ function login_user($username_email, $password) {
 	}
 	else
 	{
-		// Fill session with candy
+		// Fill session with candy 'cause login right
 		session_set_cookie_params(365*24*60*60);
 		$_SESSION['user'] = $user;
 		$GLOBALS['infos'][] = 'Login successful';
+		// Login right, create easy token for one action right now
+		$_COOKIE['token'] = $_SESSION['token'] = TRUE;
+		$_POST['action'] = 'user'; // Redirect to user details
 	}
 }
 
+// Open database
+open_base();
