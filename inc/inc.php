@@ -1,10 +1,10 @@
 <?php
 # *** LICENSE ***
-# This file is part of GeoNotes-server.
+# This file is part of GeoPost-server.
 #
 # 2013-2014 Grégoire Surrel
 #
-# GeoNotes-server is free software.
+# GeoPost-server is free software.
 # You can redistribute it under the terms of the MIT / X11 Licence.
 #
 # *** LICENSE ***

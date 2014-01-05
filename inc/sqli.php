@@ -1,12 +1,12 @@
 <?php
 # *** LICENSE ***
-# This file is part of GeoNotes-server.
+# This file is part of GeoPost-server.
 #
 # 2006      Frederic Nassar.
 # 2010-2013 Timo Van Neerden <ti-mo@myopera.com>
 # 2013-2014 Grégoire Surrel
 #
-# GeoNotes-server is free software.
+# GeoPost-server is free software.
 # You can redistribute it under the terms of the MIT / X11 Licence.
 #
 # *** LICENSE ***
@@ -14,7 +14,7 @@
 // TODO:
 //  - MVC arch
 //  - Reformat
-$GLOBALS['salt'] = 'my_geonotes_server_salt';
+$GLOBALS['salt'] = 'my_geopost_server_salt';
 
 /*
  * Open a base
@@ -26,7 +26,7 @@ function open_base() {
 }
 
 /*
- * Creates a new GeoNotes-server base.
+ * Creates a new GeoPost-server base.
  * if file does not exists, it is created, as well as the tables.
  * if file does exists, tables are checked and created if not exists
 */
