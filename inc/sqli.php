@@ -20,9 +20,8 @@ $GLOBALS['salt'] = 'my_geopost_server_salt';
  * Open a base
 */
 function open_base() {
-	$handle = create_tables();
-	$GLOBALS['db_handle'] = $handle;
-	return $handle;
+	$GLOBALS['db_handle'] = create_tables();
+	return $GLOBALS['db_handle'];
 }
 
 /*
@@ -60,10 +59,19 @@ function create_tables() {
 	/*
 	* SQLite : opens file, check tables by listing them, create the one that miss.
 	*/
-	if ( !is_dir('config') ) {
-		if (mkdir('config', 0777) === TRUE) {
-			file_put_contents('config/index.html', '');
+	if(is_writable('.'))
+	{
+		if(!is_dir('config'))
+		{
+			if(mkdir('config', 0777) === TRUE)
+			{
+				file_put_contents('config/index.html', '');
+			}
 		}
+	}
+	else
+	{
+		$GLOBALS['errors'][] = 'Write rights needed. (chmod 0777 recommended).';
 	}
 
 	$file = 'config/db.sqlite';
@@ -89,6 +97,7 @@ function create_tables() {
 		}
 	} catch (Exception $e) {
 		$GLOBALS['errors'][] = 'CreateDB: '.$e->getMessage();
+		$db_handle = false;
 	}
 
 	return $db_handle;
