@@ -32,6 +32,8 @@ else:
     <meta charset="UTF-8" />
     <title>GeoPost server</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.1/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.1/leaflet.js?2"></script>
 </head>
 <body>
 
@@ -138,6 +140,26 @@ else:
 <?php elseif($_POST['action'] === 'list' || $_POST['action'] === 'list_mine'): // $_POST['action'] ?>
 
 <h2>List of <?php if($_POST['action'] === 'list_mine') echo 'my '; ?>notes</h2>
+<div id="map" style='height: 550px; width: 700px; margin: auto;'></div>
+<script>
+	// initialize the map on the "map" div with a given center and zoom
+	var map = new L.Map('map', {
+		center: new L.LatLng(20, 0),
+		zoom: 1,
+		minZoom: 1
+	});
+	// create a tile layer
+	var mapquestUrl = 'http://otile{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png';
+	var mapquest = new L.TileLayer(mapquestUrl, {maxZoom: 18, subdomains: '1234'});
+	map.addLayer(mapquest);
+	// Data
+	var data = <?php echo json_encode($response['data']); ?>;
+	for(i=0; i<data.length; i++)
+	{
+		var marker = L.marker([data[i].lat, data[i].lon]).addTo(map);
+		marker.bindPopup("<b>"+data[i].title+"</b><br>"+data[i].text);
+	}
+</script>
 <?php
 	foreach($response['data'] as $note)
 	{ ?>

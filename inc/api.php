@@ -18,38 +18,38 @@ if(isset($_POST['action']) && (!$GLOBALS['token_error'] || ($debug_token_bypass 
 	// Get invasive error reporting to disable this bypass feature in prod
 	if(isset($_GET['debug'])) $GLOBALS['errors'][] = 'Token bypassed by DEBUG flag';
 
-if($_POST['action'] === 'note_add')
-{
-	$response = db_note('add', array(
-								     'lat' => $_POST['lat'],
-								     'lon' => $_POST['lon'],
-								     'title' => $_POST['title'],
-								     'text' => $_POST['text'],
-								     'user' => $_SESSION['user']->ID,
-								     'karma' => '0',
-								     'creation' => date('U'),
-								     'lifetime' => $_POST['lifetime'],
-								     'lang' => $_POST['lang'],
-								     'cat' => $_POST['cat']));
-	$GLOBALS['infos'][] = 'Note added (probably)';
-	// If HTML view, then forward to my_notes listing
-	//if(!isset($_GET['api'])) $_POST['action'] = 'list_mine';
-}
-else if($_POST['action'] === 'list')
-{
-	$response = get_notes();
-}
-else if($_POST['action'] === 'list_mine')
-{
-	$response = get_user_notes();
-}
-else if($_POST['action'] === 'user')
-{
-	$response = $_SESSION['user'];
-}
-else
-{
-	$GLOBALS['errors'][] = 'Action not found';
-}
+	if($_POST['action'] === 'note_add')
+	{
+		$response = db_note('add', array(
+										 'lat' => $_POST['lat'],
+										 'lon' => $_POST['lon'],
+										 'title' => $_POST['title'],
+										 'text' => $_POST['text'],
+										 'user' => $_SESSION['user']->ID,
+										 'karma' => '0',
+										 'creation' => date('U'),
+										 'lifetime' => $_POST['lifetime'],
+										 'lang' => $_POST['lang'],
+										 'cat' => $_POST['cat']));
+		$GLOBALS['infos'][] = 'Note added (probably)';
+		// If HTML view, then forward to my_notes listing
+		//if(!isset($_GET['api'])) $_POST['action'] = 'list_mine';
+	}
+	else if($_POST['action'] === 'list')
+	{
+		$response = get_notes();
+	}
+	else if($_POST['action'] === 'list_mine')
+	{
+		$response = get_user_notes();
+	}
+	else if($_POST['action'] === 'user')
+	{
+		$response = $_SESSION['user'];
+	}
+	else
+	{
+		$GLOBALS['errors'][] = 'Action not found';
+	}
 
 }

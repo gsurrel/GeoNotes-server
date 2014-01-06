@@ -12,6 +12,9 @@
 // Start session for everybody
 session_start();
 
+// Disable any action if couldn't open DB
+if($GLOBALS['db_handle'] === false) unset($_POST['action']);
+
 // Check if signup, login or logout
 if(isset($_POST['action']))
 {
@@ -35,7 +38,7 @@ if(isset($_POST['action']))
 								 'username' => $_POST['username'],
 								 'password' => $_POST['password']));
 			login_user($_POST['username'], $_POST['password']);
-			db_note('add', array(
+			/*db_note('add', array(
 								 'lat' => '0.000000',
 								 'lon' => '0.000000',
 								 'title' => 'Title of the note',
@@ -45,7 +48,7 @@ if(isset($_POST['action']))
 								 'creation' => date('U'),
 								 'lifetime' => '0',
 								 'lang' => 'en', // TODO: Fix that
-								 'cat' => ''));
+								 'cat' => ''));*/
 		}
 		else
 		{
@@ -61,7 +64,7 @@ if(isset($_POST['action']))
 else
 {
 	$GLOBALS['errors'][] = 'Action not specified';
-	if($_SESSION['user'])
+	if(isset($_SESSION['user']))
 	{
 		$_POST['action'] = 'user';
 		$GLOBALS['warnings'][] = 'Action fallback on user details';
