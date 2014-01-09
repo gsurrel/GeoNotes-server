@@ -13,12 +13,16 @@
 session_start();
 
 // Disable any action if couldn't open DB
-if($GLOBALS['db_handle'] === false) unset($_POST['action']);
+if($GLOBALS['db_handle'] === false)
+{
+	$GLOBALS['errors'][] = 'No DB handle';
+	unset($_POST['action']);
+}
 
 // Check if signup, login or logout
 if(isset($_POST['action']))
 {
-	if($_POST['action'] === 'login')
+	if($_POST['action'] === 'login' || (isset($_POST['username_email']) && isset($_POST['password'])))
 	{
 		if(isset($_POST['username_email']) && isset($_POST['password']))
 		{
@@ -66,7 +70,7 @@ else
 	$GLOBALS['errors'][] = 'Action not specified';
 	if(isset($_SESSION['user']))
 	{
-		$GLOBALS['infos'][] = 'Redirected action to "user"';
+		$GLOBALS['infos'][] = 'Redirected action to "user" because of no action specified and user logged in';
 		$_POST['action'] = 'user';
 		$GLOBALS['warnings'][] = 'Action fallback on user details';
 	}

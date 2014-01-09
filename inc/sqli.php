@@ -326,8 +326,12 @@ function login_user($username_email, $password) {
 		$GLOBALS['infos'][] = 'Login successful';
 		// Login right, create easy token for one action right now
 		$_COOKIE['token'] = $_SESSION['token'] = TRUE;
-		$GLOBALS['infos'][] = 'Redirected action to "user"';
-		$_POST['action'] = 'user'; // Redirect to user details
+		if($_POST['action'] === 'login')
+		{
+			// This is in case of simple login, no other action asked for
+			$GLOBALS['infos'][] = 'Redirected action to "user" because of good login';
+			$_POST['action'] = 'user'; // Redirect to user details
+		}
 	}
 }
 

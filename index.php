@@ -12,6 +12,10 @@
 //require_once('inc/helper.php');
 // Reporte toutes les erreurs PHP
 error_reporting(-1);
+foreach($_GET as $key => $value)
+{
+	$_POST[$key] = $value;
+}
 
 // Placeholder for answer
 $response = NULL;
