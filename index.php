@@ -10,6 +10,8 @@
 # *** LICENSE ***
 
 //require_once('inc/helper.php');
+// Reporte toutes les erreurs PHP
+error_reporting(-1);
 
 // Placeholder for answer
 $response = NULL;
