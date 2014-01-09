@@ -151,7 +151,7 @@ function db_note($what, $note) {
 				lifetime=?,
 				lang=?,
 				cat=?
-				WHERE ID=?');
+				WHERE ID=? and user=?');
 			$req->execute(array(
 				$note['title'],
 				$note['text'],
@@ -159,6 +159,7 @@ function db_note($what, $note) {
 				$note['lang'],
 				$note['cat'],
 				$note['ID'],
+				$note['user'],
 			));
 			return TRUE;
 		} catch (Exception $e) {
@@ -325,6 +326,7 @@ function login_user($username_email, $password) {
 		$GLOBALS['infos'][] = 'Login successful';
 		// Login right, create easy token for one action right now
 		$_COOKIE['token'] = $_SESSION['token'] = TRUE;
+		$GLOBALS['infos'][] = 'Redirected action to "user"';
 		$_POST['action'] = 'user'; // Redirect to user details
 	}
 }

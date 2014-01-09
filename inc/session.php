@@ -66,6 +66,7 @@ else
 	$GLOBALS['errors'][] = 'Action not specified';
 	if(isset($_SESSION['user']))
 	{
+		$GLOBALS['infos'][] = 'Redirected action to "user"';
 		$_POST['action'] = 'user';
 		$GLOBALS['warnings'][] = 'Action fallback on user details';
 	}

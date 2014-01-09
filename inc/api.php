@@ -32,8 +32,18 @@ if(isset($_POST['action']) && (!$GLOBALS['token_error'] || ($debug_token_bypass 
 										 'lang' => $_POST['lang'],
 										 'cat' => $_POST['cat']));
 		$GLOBALS['infos'][] = 'Note added (probably)';
-		// If HTML view, then forward to my_notes listing
-		//if(!isset($_GET['api'])) $_POST['action'] = 'list_mine';
+	}
+	else if($_POST['action'] === 'note_edit')
+	{
+		$response = db_note('edit', array(
+										 'title' => $_POST['title'],
+										 'text' => $_POST['text'],
+										 'lifetime' => $_POST['lifetime'],
+										 'lang' => $_POST['lang'],
+										 'cat' => $_POST['cat'],
+										 'ID' => $_POST['id'],
+										 'user' => $_SESSION['user']->ID));
+		$GLOBALS['infos'][] = 'Note edited (probably)';
 	}
 	else if($_POST['action'] === 'list')
 	{
