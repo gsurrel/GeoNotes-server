@@ -24,6 +24,7 @@ $response = array('infos' => $GLOBALS['infos'],
                   'data' => $response);
 
 if(isset($_GET['api'])):
+	header('Content-Type: application/json');
 	echo json_encode($response);
 else:
 ?><!DOCTYPE html>
