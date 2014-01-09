@@ -52,7 +52,7 @@ if(isset($_POST['action']))
 								 'creation' => date('U'),
 								 'lifetime' => '0',
 								 'lang' => 'en', // TODO: Fix that
-								 'cat' => ''));*/
+								 'cat' => '0'));*/
 		}
 		else
 		{

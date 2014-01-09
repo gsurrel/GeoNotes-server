@@ -33,16 +33,16 @@ function create_tables() {
 	$requests['gn_notes'] = 'CREATE TABLE gn_notes
 		(
 			ID INTEGER PRIMARY KEY,
-			lat REAL,
-			lon REAL,
-			title TEXT,
-			text TEXT,
-			user INTEGER,
-			karma INTEGER,
-			creation NUMERIC,
-			lifetime INTEGER,
-			lang TEXT,
-			cat TEXT
+			lat REAL NOT NULL,
+			lon REAL NOT NULL,
+			title TEXT NOT NULL,
+			text TEXT NOT NULL,
+			user INTEGER NOT NULL,
+			karma INTEGER NOT NULL,
+			creation NUMERIC NOT NULL,
+			lifetime INTEGER NOT NULL,
+			lang TEXT NOT NULL,
+			cat INTEGER NOT NULL
 		); CREATE INDEX toUser ON gn_notes ( user );';
 
 	$requests['gn_users'] = 'CREATE TABLE gn_users
