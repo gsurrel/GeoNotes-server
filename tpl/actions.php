@@ -17,7 +17,7 @@
 	<input type="hidden" name="text" value="<?php echo shell_exec("shuf -n100 /usr/share/dict/words | tr '\n' ' '"); ?>"/>
 	<input type="hidden" name="lifetime" value="0"/>
 	<input type="hidden" name="lang" value="en"/>
-	<input type="hidden" name="cat" value="0"/>
+	<input type="hidden" name="cat" value="<?php echo rand(0,3); ?>"/>
 	<input type="submit" value="'note_add'"/>
 </form>
 <form method="POST">
