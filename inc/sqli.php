@@ -251,7 +251,7 @@ function get_users() {
 */
 function get_notes() {
 	try {
-		$req = $GLOBALS['db_handle']->query('SELECT * FROM gn_notes');
+		$req = $GLOBALS['db_handle']->query('SELECT gn_notes.ID, lat, lon, title, text, username AS user, karma, creation, lifetime, lang, cat FROM gn_notes JOIN gn_users ON gn_notes.user=gn_users.ID');
 		return $req->fetchAll(PDO::FETCH_CLASS);
 	} catch (Exception $e) {
 		$GLOBALS['errors'][] = 'Err. get_notes : '.$e->getMessage();
@@ -263,7 +263,7 @@ function get_notes() {
 */
 function get_user_notes() {
 	try {
-		$req = $GLOBALS['db_handle']->prepare('SELECT * FROM gn_notes WHERE user=?');
+		$req = $GLOBALS['db_handle']->prepare('SELECT gn_notes.ID, lat, lon, title, text, username AS user, karma, creation, lifetime, lang, cat FROM gn_notes LEFT JOIN gn_users ON gn_notes.user=gn_users.ID WHERE user=?');
 		$req->execute(array(
 		                  $_SESSION['user']->ID,
 		                  ));
