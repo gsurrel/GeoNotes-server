@@ -11,8 +11,8 @@
 </form>
 <form method="POST">
 	<input type="hidden" name="action" value="note_add"/>
-	<input type="hidden" name="lat" value="<?php echo rand(-90, 90).'.'.rand(); ?>"/>
-	<input type="hidden" name="lon" value="<?php echo rand(-180, 180).'.'.rand(); ?>"/>
+	<input type="hidden" name="lat" value="<?php echo rand(464662412291, 466022801330)/10000000000; ?>"/>
+	<input type="hidden" name="lon" value="<?php echo rand(64524078369, 68060302734)/10000000000; ?>"/>
 	<input type="hidden" name="title" value="<?php echo shell_exec("shuf -n5 /usr/share/dict/words | tr '\n' ' '"); ?>"/>
 	<input type="hidden" name="text" value="<?php echo shell_exec("shuf -n100 /usr/share/dict/words | tr '\n' ' '"); ?>"/>
 	<input type="hidden" name="lifetime" value="0"/>
