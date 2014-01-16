@@ -317,6 +317,7 @@ function login_user($username_email, $password) {
 		// wait for 0.5 seconds for preventing bruteforcing
 		usleep(500000);
 		$GLOBALS['infos'][] = 'Wrong login';
+		unset($_POST['action']);
 	}
 	else
 	{
@@ -326,7 +327,7 @@ function login_user($username_email, $password) {
 		$GLOBALS['infos'][] = 'Login successful';
 		// Login right, create easy token for one action right now
 		$_COOKIE['token'] = $_SESSION['token'] = TRUE;
-		if($_POST['action'] === 'login')
+		if($_POST['action'] === 'login' || $_POST['action'] === 'register')
 		{
 			// This is in case of simple login, no other action asked for
 			$GLOBALS['infos'][] = 'Redirected action to "user" because of good login';

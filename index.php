@@ -55,7 +55,8 @@ else:
 		<h1>Admin</h1>
 		<?php d($_SESSION); ?>
 		<?php d(get_users()); ?>
-		<?php d(get_notes());
+		<?php d(get_notes()); ?>
+		<?php d($_SERVER);
 	endif;
 
 endif;

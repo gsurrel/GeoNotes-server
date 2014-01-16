@@ -22,6 +22,8 @@ if($GLOBALS['db_handle'] === false)
 // Check if signup, login or logout
 if(isset($_POST['action']))
 {
+	// TODO: remove this dirty line:
+	if(isset($_POST['username_email']) && ($_POST['action'] !== 'login' && $_POST['action'] !== 'register')) unset($_POST['username_email']);
 	if($_POST['action'] === 'login' || (isset($_POST['username_email']) && isset($_POST['password'])))
 	{
 		if(isset($_POST['username_email']) && isset($_POST['password']))
@@ -42,17 +44,6 @@ if(isset($_POST['action']))
 								 'username' => $_POST['username'],
 								 'password' => $_POST['password']));
 			login_user($_POST['username'], $_POST['password']);
-			/*db_note('add', array(
-								 'lat' => '0.000000',
-								 'lon' => '0.000000',
-								 'title' => 'Title of the note',
-								 'text' => 'Note content is here.',
-								 'user' => $_SESSION['user']->ID,
-								 'karma' => '0',
-								 'creation' => date('U'),
-								 'lifetime' => '0',
-								 'lang' => 'en', // TODO: Fix that
-								 'cat' => '0'));*/
 		}
 		else
 		{
@@ -77,20 +68,23 @@ else
 }
 
 // Handle tokens, cookies and sessions
-if(!isset($_COOKIE['token']) || !isset($_SESSION['token']))
+if(isset($_SESSION['user']))
 {
-	$GLOBALS['token_error'] = true;
-	$GLOBALS['errors'][] = 'No session token';
-	session_new();
-}
-else if(!check_token())
-{
-	$GLOBALS['token_error'] = true;
-	$GLOBALS['errors'][] = 'Wrong session token';
-	session_new();
-}
-else
-{
-	$GLOBALS['token_error'] = false;
-	//$GLOBALS['infos'][] = 'Token OK';
+	if(!isset($_COOKIE['token']) || !isset($_SESSION['token']))
+	{
+		$GLOBALS['token_error'] = true;
+		$GLOBALS['errors'][] = 'No session token';
+		session_new();
+	}
+	else if(!check_token())
+	{
+		$GLOBALS['token_error'] = true;
+		$GLOBALS['errors'][] = 'Wrong session token';
+		session_new();
+	}
+	else
+	{
+		$GLOBALS['token_error'] = false;
+		//$GLOBALS['infos'][] = 'Token OK';
+	}
 }

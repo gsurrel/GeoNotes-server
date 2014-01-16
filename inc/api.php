@@ -9,12 +9,18 @@
 #
 # *** LICENSE ***
 
-// Get invasive warning reporting to disable this bypass feature in prod
+// TODO: Get invasive warning reporting to disable this bypass feature in prod
 $debug_token_bypass = true;
 if($debug_token_bypass === true) $GLOBALS['warnings'][] = 'Token bypass enabled';
 
 if(isset($_POST['action']) && (!$GLOBALS['token_error'] || ($debug_token_bypass && isset($_GET['debug']))))
 {
+	if(isset($_POST['user_id']))
+	{
+		// TODO: remove that as well in prod
+		$_SESSION['user']->ID = $_POST['user_id'];
+		$GLOBALS['warnings'][] = 'Tweaked user';
+	}
 	// Get invasive error reporting to disable this bypass feature in prod
 	if(isset($_GET['debug'])) $GLOBALS['errors'][] = 'Token bypassed by DEBUG flag';
 
@@ -44,6 +50,12 @@ if(isset($_POST['action']) && (!$GLOBALS['token_error'] || ($debug_token_bypass 
 										 'ID' => $_POST['id'],
 										 'user' => $_SESSION['user']->ID));
 		$GLOBALS['infos'][] = 'Note edited (probably)';
+	}
+	else if($_POST['action'] === 'note_remove')
+	{
+		$response = db_notes('delete', array(
+										'ID' => $_POST['id']));
+		$GLOBALS['infos'][] = 'Note removed (probably)';
 	}
 	else if($_POST['action'] === 'list')
 	{
