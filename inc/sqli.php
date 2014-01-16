@@ -166,7 +166,6 @@ function db_note($what, $note) {
 			$GLOBALS['errors'][] = 'Err. note>edit : '.$e->getMessage();
 		}
 	}
-
 	elseif ($what == 'delete') {
 		try {
 			$req = $GLOBALS['db_handle']->prepare('DELETE FROM gn_notes WHERE ID=?');
@@ -176,6 +175,8 @@ function db_note($what, $note) {
 			$GLOBALS['errors'][] = 'Err. note>delete : '.$e->getMessage();
 		}
 	}
+	
+	return false;
 }
 
 /*
