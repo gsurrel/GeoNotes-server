@@ -53,9 +53,8 @@ if(isset($_POST['action']) && (!$GLOBALS['token_error'] || ($debug_token_bypass 
 	}
 	else if($_POST['action'] === 'note_remove')
 	{
-		$response = db_notes('delete', array(
+		$response = db_note('delete', array(
 										 'ID' => $_POST['id']));
-		$response = db_notes('delete', array('ID' => 217));
 		$GLOBALS['infos'][] = 'Note removed (probably)';
 	}
 	else if($_POST['action'] === 'list')
