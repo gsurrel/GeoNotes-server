@@ -23,7 +23,7 @@ if($GLOBALS['db_handle'] === false)
 if(isset($_POST['action']))
 {
 	// TODO: remove this dirty line:
-	if(isset($_POST['username_email']) && ($_POST['action'] !== 'login' && $_POST['action'] !== 'register')) unset($_POST['username_email']);
+	if(isset($_POST['username_email']) && $_POST['action'] !== 'login' && $_POST['action'] !== 'register') unset($_POST['username_email']);
 	if($_POST['action'] === 'login' || (isset($_POST['username_email']) && isset($_POST['password'])))
 	{
 		if(isset($_POST['username_email']) && isset($_POST['password']))
